@@ -46,7 +46,9 @@ routeBtn.addEventListener('click', async () => {
         });
         const data = await response.json();
         const routeGeoJSON = data.route;
-
+        const props = routeGeoJSON.properties;
+        document.getElementById('route-distance').textContent = `${props.distance_meters} m`;
+        document.getElementById('route-lit').textContent = `${props.lit_percentage}%`;
         // Render or update route line on Mapbox
         if (map.getSource('safe-route')) {
             map.getSource('safe-route').setData(routeGeoJSON);
