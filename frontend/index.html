@@ -27,9 +27,21 @@
             <span>Destination:</span>
             <span id="end-coords" class="coord">Not selected</span>
         </div>
-
+        <div class="field">
+            <span>Distance:</span>
+            <span id="route-distance" class="coord">-</span>
+        </div>
+        <div class="field">
+            <span>Well-Lit:</span>
+            <span id="route-lit" class="coord">-</span>
+        </div>
         <button id="route-btn" disabled>Calculate Safe Route</button>
         <button id="reset-btn" class="secondary-btn">Reset</button>
+
+        <!-- Street Lighting Heatmap Toggle -->
+        <button id="heatmap-btn" class="secondary-btn" style="margin-top: 12px;">
+            Show Street Lighting Heatmap
+        </button>
     </div>
 
     <script src="config.js"></script>
