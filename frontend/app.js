@@ -1,12 +1,28 @@
 mapboxgl.accessToken = MAPBOX_TOKEN;
 
+// Dynamically target whichever host served the page (works on both localhost and mobile over Wi-Fi)
+const API_BASE = `http://${window.location.hostname}:8000`;
+
 const map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/dark-v11',
     center: [-2.2426, 53.4808], // Manchester
     zoom: 13
 });
+
 map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+// Add live GPS blue dot control (requires HTTPS / ngrok when testing outdoors on mobile)
+map.addControl(
+    new mapboxgl.GeolocateControl({
+        positionOptions: {
+            enableHighAccuracy: true
+        },
+        trackUserLocation: true,
+        showUserHeading: true
+    }),
+    'top-right'
+);
 
 let startPoint = null;
 let endPoint = null;
@@ -39,7 +55,7 @@ routeBtn.addEventListener('click', async () => {
     if (!startPoint || !endPoint) return;
 
     try {
-        const response = await fetch('http://localhost:8000/route', {
+        const response = await fetch(`${API_BASE}/route`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ start: startPoint, end: endPoint })
@@ -94,7 +110,7 @@ const heatmapBtn = document.getElementById('heatmap-btn');
 
 async function loadLightingHeatmap() {
     try {
-        const res = await fetch('http://localhost:8000/streetlights');
+        const res = await fetch(`${API_BASE}/streetlights`);
         const geojsonData = await res.json();
 
         map.addSource('streetlights', {
