@@ -49,6 +49,7 @@ routeBtn.addEventListener('click', async () => {
         const props = routeGeoJSON.properties;
         document.getElementById('route-distance').textContent = `${props.distance_meters} m`;
         document.getElementById('route-lit').textContent = `${props.lit_percentage}%`;
+
         // Render or update route line on Mapbox
         if (map.getSource('safe-route')) {
             map.getSource('safe-route').setData(routeGeoJSON);
@@ -85,4 +86,66 @@ resetBtn.addEventListener('click', () => {
 
     if (map.getLayer('safe-route')) map.removeLayer('safe-route');
     if (map.getSource('safe-route')) map.removeSource('safe-route');
+});
+
+// --- Street Lighting Heatmap Layer ---
+let heatmapVisible = false;
+const heatmapBtn = document.getElementById('heatmap-btn');
+
+async function loadLightingHeatmap() {
+    try {
+        const res = await fetch('http://localhost:8000/streetlights');
+        const geojsonData = await res.json();
+
+        map.addSource('streetlights', {
+            type: 'geojson',
+            data: geojsonData
+        });
+
+        map.addLayer({
+            id: 'lighting-heatmap',
+            type: 'heatmap',
+            source: 'streetlights',
+            maxzoom: 17,
+            layout: {
+                visibility: 'none'
+            },
+            paint: {
+                'heatmap-weight': ['get', 'weight'],
+                'heatmap-intensity': ['interpolate', ['linear'], ['zoom'], 11, 0.25, 14, 0.7, 16, 1.3],
+                'heatmap-color': [
+                    'interpolate',
+                    ['linear'],
+                    ['heatmap-density'],
+                    0, 'rgba(0, 0, 0, 0)',
+                    0.25, 'rgba(30, 58, 138, 0.25)',
+                    0.55, 'rgba(217, 119, 6, 0.50)',
+                    0.85, 'rgba(251, 191, 36, 0.70)',
+                    1.0, 'rgba(254, 240, 138, 0.85)'
+                ],
+                'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 11, 3, 13, 6, 16, 16],
+                'heatmap-opacity': 0.65
+            }
+        });
+    } catch (err) {
+        console.error('Failed to load street lighting heatmap:', err);
+    }
+}
+
+map.on('load', () => {
+    loadLightingHeatmap();
+});
+
+heatmapBtn.addEventListener('click', () => {
+    if (!map.getLayer('lighting-heatmap')) return;
+
+    heatmapVisible = !heatmapVisible;
+    map.setLayoutProperty(
+        'lighting-heatmap',
+        'visibility',
+        heatmapVisible ? 'visible' : 'none'
+    );
+    heatmapBtn.textContent = heatmapVisible
+        ? 'Hide Street Lighting Heatmap'
+        : 'Show Street Lighting Heatmap';
 });

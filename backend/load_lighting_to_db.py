@@ -17,7 +17,9 @@ def load_council_lighting(filepath="data/street_lighting_2025.csv"):
     df = pd.read_csv(filepath)
     # Drop the 7 rows missing coordinates and keep only street lights ('L')
     df = df.dropna(subset=["Eastings", "Northings"])
-    df = df[df["Unit_Type"] == "L"]
+    # Include Street Lights (L), Bollards (B, T), Wall Mounted (W), Subway (U), High Mast (H), Amenity (A), Floodlight (X)
+    valid_light_codes = ["L", "B", "W", "U", "H", "A", "T", "X"]
+    df = df[df["Unit_Type"].isin(valid_light_codes)]
 
     conn = psycopg2.connect(**DB_CONFIG)
     cur = conn.cursor()
